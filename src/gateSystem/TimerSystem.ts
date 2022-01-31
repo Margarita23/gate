@@ -3,7 +3,7 @@ export class TimerSystem {
     public timer: any;
     public stopMovement: any;
 
-    constructor(delay: number = 10000) {
+    constructor(delay: number) {
         this.delay = delay;
     }
 
@@ -17,7 +17,7 @@ export class TimerSystem {
     }
 
     stop() {
-        console.log('STOP');
         clearTimeout(this.timer);
+        console.log('STOP');
     }
 }
