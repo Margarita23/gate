@@ -35,7 +35,6 @@ export class EventObserver {
       }
   
     broadcast (data?: any) {
-        console.log('some change', data);
         this.observers.forEach(subscriber => subscriber(data));
     }
 }
