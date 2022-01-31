@@ -5,15 +5,21 @@ export abstract class State {
     public gate: Gate;
     public delay: number;
 
-    constructor(gate: Gate, delay: number = 10000) {
+    constructor(gate: Gate, delay?: number) {
         this.gate = gate;
-        this.delay = delay;
+        this.delay = delay || this.gate.duration;
     }
 
     public abstract click(): void;
 }
 
 export class ClosedState extends State {
+
+    constructor(gate: Gate, delay?: number){
+        super(gate, delay);
+
+        console.log('GATE IS CLOSED');
+    }
 
     public click(): void {
         this.gate.changeState(new MoveUpState(this.gate, this.delay));
@@ -22,7 +28,7 @@ export class ClosedState extends State {
 
 class OpenedState extends State {
 
-    constructor(gate: Gate, delay: number = 10000){
+    constructor(gate: Gate, delay?: number){
         super(gate, delay);
 
         this.gate.sensor.observer.unsubscribeAll();
@@ -32,7 +38,7 @@ class OpenedState extends State {
     }
 
     public click(): void {
-        this.gate.changeState(this.gate.sensor.noticed? new PendingState(this.gate, this.delay, MoveDownState) : new MoveDownState(this.gate, this.delay));
+        this.gate.changeState(this.gate.sensor.noticed? new PendingState(this.gate, MoveDownState, this.delay) : new MoveDownState(this.gate, this.delay));
     };
     
 }
@@ -41,7 +47,7 @@ class PendingState extends State {
 
     public nextState: any;
 
-    constructor(gate: Gate, delay: number, nextState: any) {
+    constructor(gate: Gate, nextState: any, delay?: number) {
         super(gate, delay);
 
         this.gate.sensor.observer.unsubscribeAll();
@@ -65,20 +71,15 @@ class MoveUpState extends State {
 
     public timer: TimerSystem;
 
-    constructor(gate: Gate, delay: number) {
+    constructor(gate: Gate, delay?: number) {
         super(gate, delay);
-        this.timer = new TimerSystem(delay);
+        this.timer = new TimerSystem(delay || this.gate.duration);
         this.timer.run( () => {this.click()} );
 
         console.log('GATE start MoveUP');
     }
 
     public click(): void {
-
-        // if(this.gate.sensor.noticed){
-        //     new PendingState(this.gate, this.delay);
-        //     return;
-        // }
 
         if(this.timer.stopMovement > Date.now()) {
             const remainingSec = this.timer.stopMovement - Date.now();
@@ -98,10 +99,10 @@ class MoveDownState extends State {
 
     public timer: TimerSystem;
     
-    constructor(gate: Gate, delay: number) {
+    constructor(gate: Gate, delay?: number) {
         super(gate, delay);
 
-        this.timer = new TimerSystem(delay);
+        this.timer = new TimerSystem(delay || this.gate.duration);
         this.timer.run( () => {this.click()} );
 
         this.gate.sensor.observer.unsubscribeAll();
@@ -119,7 +120,7 @@ class MoveDownState extends State {
             this.timer.stop();
 
             this.gate.changeState(this.gate.sensor.noticed ?
-                new PendingState(this.gate, this.delay - remainingSec, MoveDownState) : 
+                new PendingState(this.gate, MoveDownState, this.delay - remainingSec, ) : 
                 new MoveUpState(this.gate, this.delay - remainingSec));
 
         } else {
