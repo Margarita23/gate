@@ -27,6 +27,7 @@ export class ClosedState extends State {
 }
 
 class OpenedState extends State {
+    public timer: TimerSystem;
 
     constructor(gate: Gate, delay?: number){
         super(gate, delay);
@@ -34,12 +35,20 @@ class OpenedState extends State {
         this.gate.sensor.observer.unsubscribeAll();
         this.gate.sensor.observer.subscribe(() => { this.click() });
 
+        this.defaultClosed();
+
         console.log('GATE IS OPEN');
     }
 
     public click(): void {
         this.gate.changeState(this.gate.sensor.noticed? new PendingState(this.gate, MoveDownState, this.delay) : new MoveDownState(this.gate, this.delay));
     };
+
+    
+    public defaultClosed() {
+        this.timer = new TimerSystem(10000);
+        this.timer.run( () => {this.click()} );
+    }
     
 }
 
