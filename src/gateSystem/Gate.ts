@@ -16,13 +16,16 @@ export class Gate {
 
     public set duration(newDuration: number) {
         if (this.state.constructor.name !== 'ClosedState' &&
-            this.state.constructor.name !== 'OpenedState') {
+            this.state.constructor.name !== 'OpenedState'&&
+            this.state.constructor.name !== 'PendingState') {
             console.log('Your gate should be closed or opened to change guration');
             return;
         } else if (newDuration < 10) {
             console.log('Gate duration should be more then 10 sec');
         }
+
         this._duration = newDuration*1000;
+        this.state.delay = this._duration;
     }
 
     public constructor(codeName: string) {
